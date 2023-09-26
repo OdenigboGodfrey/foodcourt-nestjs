@@ -8,15 +8,15 @@ export interface IUser {
   fullName: string;
   gender: string;
   dateOfBirth: Date;
-  homeAddress: string;
-  status: string;
+  homeAddress?: string;
+  status?: string;
   userType: USER_TYPE;
-  roles: string[];
-  additionalContact: string;
-  otp: string;
-  otpCreatedAt: Date;
-  otpReason: string;
-  emailVerifiedDate: Date;
+  roles?: string[];
+  additionalContact?: string;
+  otp?: string;
+  otpCreatedAt?: Date;
+  otpReason?: string;
+  emailVerifiedDate?: Date;
   // facebookId: string;
   // appleId: string;
 }

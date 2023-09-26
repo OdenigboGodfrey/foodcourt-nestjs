@@ -12,6 +12,14 @@ import { UserRepository } from './repository/user.repository';
       provide: 'UserRepositoryInterface',
       useClass: UserRepository,
     },
+    {
+      provide: 'WINSTON_MODULE_PROVIDER',
+      useValue: { error: () => {}, info: () => {} },
+    },
+    {
+      provide: 'CACHE_MANAGER',
+      useValue: {},
+    },
   ],
 })
 export class UserModule {}

@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { Model } from 'objection';
 import * as dotnev from 'dotenv';
+import knex from 'knex';
+
 dotnev.config();
 
 const knexConfig = {
@@ -22,5 +24,7 @@ const knexConfig = {
 };
 
 Model.knex(require('knex')(knexConfig));
+
+export const knexInstance = knex(knexConfig);
 
 export default knexConfig;

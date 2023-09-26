@@ -13,8 +13,6 @@ export class UserDTO implements IUser {
     Object.assign(this, init);
   }
   @ApiProperty()
-  additionalContact: string;
-  @ApiProperty()
   id?: number;
   @ApiProperty()
   email: string;
@@ -26,16 +24,16 @@ export class UserDTO implements IUser {
   fullName: string;
   @ApiProperty()
   gender: string;
-  @ApiProperty()
+  @ApiProperty({ type: String })
   dateOfBirth: Date;
   @ApiProperty()
-  homeAddress: string;
+  homeAddress?: string;
   @ApiProperty()
-  status: string;
+  status?: string;
   @ApiProperty()
   userType: USER_TYPE;
   @ApiProperty()
-  roles: string[];
+  roles?: string[];
   @ApiProperty()
   createdAt?: Date;
   @ApiProperty()
@@ -43,13 +41,15 @@ export class UserDTO implements IUser {
   @ApiProperty()
   deletedAt?: Date;
   @ApiProperty()
-  otpCreatedAt: Date;
+  additionalContact?: string;
   @ApiProperty()
-  otp: string;
+  otpCreatedAt?: Date;
   @ApiProperty()
-  otpReason: string;
+  otp?: string;
   @ApiProperty()
-  emailVerifiedDate: Date;
+  otpReason?: string;
+  @ApiProperty()
+  emailVerifiedDate?: Date;
 }
 
 export class UserPasswordDTO implements IChangePassword {
@@ -68,11 +68,17 @@ export class EditUserDTO {
   @ApiProperty()
   id: number;
   @ApiProperty()
+  dateOfBirth: Date;
+  @ApiProperty()
+  email: string;
+  @ApiProperty()
+  phone: string;
+  @ApiProperty()
   fullName: string;
   @ApiProperty()
   gender: string;
   @ApiProperty()
-  homeAddress: string;
+  homeAddress?: string;
 }
 
 export class ForgotPasswordDTO implements IForgotPassword {
@@ -133,4 +139,6 @@ export class BasicUserDTO implements BasicUserType {
   fullName: string;
   @ApiProperty()
   gender: string;
+  @ApiProperty()
+  homeAddress?: string;
 }

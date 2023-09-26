@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { User } from '../entities/user.entity';
 import { EditUserDTO, UserDTO } from '../dtos/user.dto';
 import { ResponseDTO } from './../../../shared/dto/response.dto';
@@ -13,15 +13,23 @@ import {
 } from './../../../shared/dto/pagination.dto';
 import { OTPTokenType } from '../types/otp-token.type';
 import { UserRepositoryInterface } from '../repository/user.repository';
-import { PERMISSIONS } from './../../../shared/enums/permissions.enum';
+// import { PERMISSIONS } from './../../../shared/enums/permissions.enum';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject('WINSTON_MODULE_PROVIDER') private readonly logger: Logger,
     @Inject('UserRepositoryInterface')
     private readonly repository: UserRepositoryInterface,
   ) {}
+
+  private logger = {
+    error: (...args) => {
+      console.error(args);
+    },
+    info: (...args) => {
+      console.log(args);
+    },
+  };
 
   public newUserDTO(user: User): UserDTO {
     return { ...user };
@@ -468,10 +476,7 @@ export class UserService {
     return response;
   }
 
-  async updateUserRole(
-    user: User,
-    roles: PERMISSIONS[],
-  ): Promise<ResponseDTO<boolean>> {
+  async updateUserRole(user: User, roles: []): Promise<ResponseDTO<boolean>> {
     const response = new ResponseDTO<boolean>();
     response.data = false;
     try {

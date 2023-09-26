@@ -5,13 +5,11 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
   Param,
   UseInterceptors,
   Delete,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOperation,
@@ -34,12 +32,7 @@ import {
   PaginationParameterRequestDTO,
   PaginationParameterResponseDTO,
 } from '../../../shared/dto/pagination.dto';
-import { PERMISSIONS } from '../../../shared/enums/permissions.enum';
 import { HttpCacheInterceptor } from '../../../shared/interceptors/custom-cache-interceptor.service';
-
-const JwtAuthGuard = () => {
-  return true;
-};
 
 @ApiTags('user')
 @Controller('user')
@@ -55,7 +48,7 @@ export class UserController {
   @ApiResponse({
     type: UserDTO,
   })
-  @Post('/create-user')
+  @Post('/')
   @ApiBody({ type: BasicUserDTO })
   async create(@Body() data: BasicUserDTO): Promise<ResponseDTO<UserDTO>> {
     const userObject = new UserDTO(data);
@@ -77,8 +70,6 @@ export class UserController {
     isArray: true,
   })
   @Get('/get-all-users-by-usertype/patient')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async getPatientUsers(
     @Query() userType: USER_TYPE,
     @Query() pagination: PaginationParameterRequestDTO,
@@ -114,8 +105,6 @@ export class UserController {
   })
   @Patch('/update-patient-profile')
   @ApiBody({ type: EditUserDTO })
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async updatePatientProfile(
     @Body() data: EditUserDTO,
   ): Promise<ResponseDTO<boolean>> {
@@ -145,7 +134,6 @@ export class UserController {
   })
   @Patch('/update-password')
   @ApiBody({ type: ChangePasswordDTO })
-  @ApiBearerAuth()
   async changePassword(
     @Body() data: ChangePasswordDTO,
   ): Promise<ResponseDTO<boolean>> {
@@ -175,8 +163,6 @@ export class UserController {
     type: UserDTO,
   })
   @Get('/get-user-by-id/:id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async getPatientById(@Param('id') id: number): Promise<ResponseDTO<UserDTO>> {
     const result = await this.service.getUserById(id);
     const response = new ResponseDTO<UserDTO>();
@@ -199,8 +185,6 @@ export class UserController {
     type: Boolean,
   })
   @Delete('/delete-patient-account/:userId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async deletePatientAccount(
     @Param('userId') userId: number,
   ): Promise<ResponseDTO<boolean>> {
@@ -228,12 +212,10 @@ export class UserController {
     type: Boolean,
   })
   @Patch('/update-user-role/:id')
-  @ApiBody({ type: typeof PERMISSIONS, isArray: true })
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @ApiBody({ isArray: true })
   async updateRoles(
     @Param('id') id: number,
-    @Body() data: PERMISSIONS[],
+    @Body() data: [],
   ): Promise<ResponseDTO<boolean>> {
     const response = new ResponseDTO<boolean>();
     const user = await this.service.getUserById(id);
