@@ -8,6 +8,7 @@ import {
   Put,
   ValidationPipe,
 } from '@nestjs/common';
+import { AddonService } from '../services/addon.service';
 import {
   ApiConsumes,
   ApiOperation,
@@ -15,16 +16,14 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { BasicAddonDTO, AddonDTO } from '../dto/addon.dto';
 import { ResponseDTO } from 'src/shared/dto/response.dto';
-import { BasicMealDTO, MealDTO } from '../dto/meal.dto';
 import { RESPONSE_CODE } from 'src/shared/enums/response-code.enum';
-import { Meal } from '../entities/meals.entity';
-import { MealService } from '../services/meal.service';
 
-@Controller('meal')
-@ApiTags('meal')
-export class MealController {
-  constructor(private readonly service: MealService) {}
+@Controller('addon')
+@ApiTags('addon')
+export class AddonController {
+  constructor(private readonly service: AddonService) {}
 
   basicErrorMessage = 'Something went wrong, please try again.';
   basicOkMessage = 'Ok';
@@ -35,14 +34,14 @@ export class MealController {
   @ApiProduces('json')
   @ApiConsumes('application/json')
   @ApiResponse({
-    type: MealDTO,
+    type: AddonDTO,
   })
   @Post()
   async create(
     @Body(new ValidationPipe({ transform: true }))
-    payload: BasicMealDTO,
+    payload: BasicAddonDTO,
   ) {
-    const response = new ResponseDTO<MealDTO>({
+    const response = new ResponseDTO<AddonDTO>({
       message: this.basicErrorMessage,
     });
     const result = await this.service.create(payload);
@@ -69,7 +68,7 @@ export class MealController {
   update(
     @Param('id') id: number,
     @Body(new ValidationPipe({ transform: true }))
-    updatedData: Partial<Meal>,
+    updatedData: AddonDTO,
   ) {
     return this.service.update(id, updatedData);
   }

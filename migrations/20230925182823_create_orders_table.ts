@@ -6,6 +6,7 @@ export async function up(knex: Knex): Promise<void> {
     table.integer('user_id');
     table.boolean('completed');
     table.boolean('cancelled');
+    table.jsonb('meals');
   });
 }
 

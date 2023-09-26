@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MealModule } from './modules/meal/meal.module';
@@ -7,6 +12,8 @@ import { UserModule } from './modules/user/user.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 import { ConfigModule } from '@nestjs/config';
+import { RequestLoggerMiddleware } from './shared/middlewares/request-logger.middleware';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -25,6 +32,12 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    BullModule.forRoot({
+      redis: {
+        host: `${process.env.REDIS_HOST || 'localhost'}`,
+        port: (process.env.REDIS_PORT as any as number) || 6379,
+      },
+    }),
     OrderModule,
     MealModule,
     UserModule,
@@ -32,4 +45,10 @@ import { ConfigModule } from '@nestjs/config';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestLoggerMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}

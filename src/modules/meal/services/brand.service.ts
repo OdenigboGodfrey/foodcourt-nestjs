@@ -1,26 +1,31 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Brand } from '../entities/brand.entity';
+import { BrandRepositoryInterface } from '../repository/brand.repository';
 
 @Injectable()
 export class BrandService {
-  async create(brandData: Partial<Brand>): Promise<Brand> {
-    return Brand.query().insert(brandData);
+  constructor(
+    @Inject('BrandRepositoryInterface')
+    private readonly repository: BrandRepositoryInterface,
+  ) {}
+  async create(payload: Partial<Brand>): Promise<Brand> {
+    return this.repository.create(Brand, payload);
   }
 
   async getAll(): Promise<Brand[]> {
-    return Brand.query();
+    return this.repository.findAll(Brand);
   }
 
   async getById(id: number): Promise<Brand> {
-    return Brand.query().findById(id);
+    return this.repository.findOneById(Brand, id);
   }
 
   async update(id: number, updatedData: Partial<Brand>): Promise<Brand> {
-    await Brand.query().findById(id).patch(updatedData);
-    return Brand.query().findById(id);
+    await this.repository.UpdateOne(Brand, id, updatedData);
+    return this.repository.findOneById(Brand, id);
   }
 
   async delete(id: number): Promise<number> {
-    return Brand.query().deleteById(id);
+    return this.repository.remove(Brand, id);
   }
 }

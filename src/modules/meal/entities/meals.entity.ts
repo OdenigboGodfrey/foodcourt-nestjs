@@ -5,19 +5,21 @@ export class Meal extends Model {
     return 'meals';
   }
 
-  id!: number;
+  id: number;
   name: string;
   brand_id: number;
   active: boolean;
+  amount: number;
 
   static get jsonSchema() {
     return {
       type: 'object',
       properties: {
-        id: { type: 'integer' },
+        id: { type: 'number' },
         name: { type: 'string' },
-        brand_id: { type: 'integer' },
+        brand_id: { type: 'number' },
         active: { type: 'boolean' },
+        amount: { type: 'number' },
       },
     };
   }

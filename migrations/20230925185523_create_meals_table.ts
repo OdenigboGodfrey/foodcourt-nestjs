@@ -6,6 +6,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('name');
     table.string('brand_id');
     table.boolean('active');
+    table.float('amount');
   });
 }
 

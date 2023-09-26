@@ -7,8 +7,8 @@ import {
   Put,
   Delete,
   ValidationPipe,
+  Patch,
 } from '@nestjs/common';
-// import { JoiValidationPipe } from 'src/shared/pipeline/joi-validation.pipeline';
 import {
   ApiConsumes,
   ApiOperation,
@@ -18,14 +18,19 @@ import {
 } from '@nestjs/swagger';
 import { OrderService } from '../services/order.service';
 import { Order } from '../entities/order.entity';
-import { BasicOrderDTO, OrderDTO } from '../dto/order.dto';
+import { NewOrderRequestDTO, NewOrderResponseDTO } from '../dto/order.dto';
 import { ResponseDTO } from 'src/shared/dto/response.dto';
 import { RESPONSE_CODE } from 'src/shared/enums/response-code.enum';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 @Controller('orders')
 @ApiTags('orders')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    @InjectQueue('orders') private readonly queue: Queue,
+  ) {}
 
   basicErrorMessage = 'Something went wrong, please try again.';
   basicOkMessage = 'Ok';
@@ -36,24 +41,33 @@ export class OrderController {
   @ApiProduces('json')
   @ApiConsumes('application/json')
   @ApiResponse({
-    type: OrderDTO,
+    type: NewOrderResponseDTO,
   })
   @Post()
   async create(
     @Body(new ValidationPipe({ transform: true }))
-    orderData: BasicOrderDTO,
+    orderData: NewOrderRequestDTO,
   ) {
-    const response = new ResponseDTO<OrderDTO>({
-      message: this.basicErrorMessage,
+    this.queue
+      .add('create', orderData)
+      .then((result) => {
+        console.log('queue result', result);
+      })
+      .catch((err) => console.error(err));
+    const response = new ResponseDTO<NewOrderResponseDTO>({
+      message: 'Order request recieved.',
+      code: RESPONSE_CODE._201,
+      status: true,
     });
-    const result = await this.orderService.create(orderData);
-    if (result) {
-      response.data = result;
-      response.status = true;
-      response.code = RESPONSE_CODE._201;
-      response.message = this.basicOkMessage;
-    }
     return response;
+    // const result = await this.orderService.create(orderData);
+    // if (result) {
+    //   response.data = result;
+    //   response.status = true;
+    //   response.code = RESPONSE_CODE._201;
+    //   response.message = this.basicOkMessage;
+    // }
+    // return response;
   }
 
   @Get()
@@ -78,5 +92,15 @@ export class OrderController {
   @Delete(':id')
   delete(@Param('id') id: number) {
     return this.orderService.delete(id);
+  }
+
+  @Patch('completed/:id')
+  completed(@Param('id') id: number) {
+    return this.orderService.markAsDone(id);
+  }
+
+  @Patch('cancel/:id')
+  cancel(@Param('id') id: number) {
+    return this.orderService.cancel(id);
   }
 }

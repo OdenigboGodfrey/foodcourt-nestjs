@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CalculatedOrderRepositoryInterface } from '../repository/calculated-order.repository';
 import { CalculatedOrder } from '../entities/calculated-order.entity';
+import { BasicCalculatedOrderDTO } from '../dto/calculated-order.dto';
 
 @Injectable()
 export class CalculatedOrderService {
@@ -9,7 +10,7 @@ export class CalculatedOrderService {
     private readonly repository: CalculatedOrderRepositoryInterface,
   ) {}
   async create(
-    calculatedOrderData: Partial<CalculatedOrder>,
+    calculatedOrderData: BasicCalculatedOrderDTO,
   ): Promise<CalculatedOrder> {
     return this.repository.create(CalculatedOrder, calculatedOrderData);
   }

@@ -60,8 +60,8 @@ export class PaginationParameterDTO extends PaginationParameterRequestDTO {
       include: include ? include : undefined,
       attributes: attributes ? attributes : undefined,
     };
-    // return repository.query(model).findAll(options);
-    return repository.query(model);
+    return repository.findAll(options);
+    // return repository.query(model);
   }
 
   async count<K>(

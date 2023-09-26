@@ -5,19 +5,21 @@ export class Order extends Model {
     return 'orders';
   }
 
-  id!: number;
-  user_id!: number;
-  completed!: boolean;
-  cancelled!: boolean;
+  id: number;
+  user_id: number;
+  completed: boolean;
+  cancelled: boolean;
+  meals: any;
 
   static get jsonSchema() {
     return {
       type: 'object',
       properties: {
-        id: { type: 'integer' },
-        user_id: { type: 'integer' },
+        id: { type: 'number' },
+        user_id: { type: 'number' },
         completed: { type: 'boolean' },
         cancelled: { type: 'boolean' },
+        meals: { type: 'jsonb' },
       },
     };
   }

@@ -9,8 +9,6 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { CalculatedOrderService } from '../services/calculated-order.service';
-// import { JoiValidationPipe } from 'src/shared/pipeline/joi-validation.pipeline';
-import { CalculatedOrder } from '../entities/calculated-order.entity';
 import {
   ApiConsumes,
   ApiOperation,
@@ -39,12 +37,12 @@ export class CalculatedOrderController {
   @ApiProduces('json')
   @ApiConsumes('application/json')
   @ApiResponse({
-    type: CalculatedOrder,
+    type: CalculatedOrderDTO,
   })
   @Post()
   async createCalculatedOrder(
     @Body(new ValidationPipe({ transform: true }))
-    calculatedOrderData: Partial<CalculatedOrder>,
+    calculatedOrderData: CalculatedOrderDTO,
   ) {
     const response = new ResponseDTO<CalculatedOrderDTO>({
       message: this.basicErrorMessage,

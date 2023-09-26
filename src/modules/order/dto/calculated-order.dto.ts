@@ -9,6 +9,8 @@ export class CalculatedOrderDTO {
   free_delivery: boolean;
   @ApiProperty()
   delivery_fee: number;
+  @ApiProperty()
+  order_id: number;
 }
 
 export class BasicCalculatedOrderDTO {
@@ -18,4 +20,6 @@ export class BasicCalculatedOrderDTO {
   free_delivery: boolean;
   @ApiProperty()
   delivery_fee: number;
+  @ApiProperty()
+  order_id: number;
 }

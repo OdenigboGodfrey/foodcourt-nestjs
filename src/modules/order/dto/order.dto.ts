@@ -1,4 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { MealRequestDTO } from 'src/modules/meal/dto/meal.dto';
+import { CalculatedOrderDTO } from './calculated-order.dto';
+import { OrderLogDTO } from './order-log.dto';
 
 export class OrderDTO {
   @ApiProperty()
@@ -9,6 +12,8 @@ export class OrderDTO {
   completed: boolean;
   @ApiProperty({ default: false })
   cancelled: boolean;
+  @ApiProperty()
+  meals: number[];
 }
 
 export class BasicOrderDTO {
@@ -21,6 +26,21 @@ export class BasicOrderDTO {
 }
 
 export class NewOrderRequestDTO {
+  @ApiProperty()
+  user_id: number;
+  @ApiProperty({ isArray: true, type: MealRequestDTO })
+  meals: MealRequestDTO[];
+}
+
+export class NewOrderResponseDTO {
+  @ApiProperty()
+  user_id: number;
+  @ApiProperty({ isArray: true, type: MealRequestDTO })
+  meals: MealRequestDTO[];
+  @ApiProperty()
+  calculateOrder: CalculatedOrderDTO;
+  @ApiProperty({ isArray: true, type: OrderLogDTO })
+  orderLog: OrderLogDTO[];
   @ApiProperty()
   order: OrderDTO;
 }

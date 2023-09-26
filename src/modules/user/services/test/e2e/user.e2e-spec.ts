@@ -1,19 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { UserDTO } from '../../../dtos/user.dto';
 import { USER_TYPE } from '../../../enums/user.enum';
 import { MockRepo } from '../../../../../../test/mocks/repo.mock';
 import { UserService } from '../../user.service';
 import { UserController } from '../../../controllers/user.controller';
-// import { JwtService } from '@nestjs/jwt';
 import { AppModule } from './../../../../../app.module';
 import * as dotenv from 'dotenv';
-import { PERMISSIONS } from './../../../../../shared/enums/permissions.enum';
 dotenv.config();
 jest.useFakeTimers();
-// import { CACHE_MANAGER, CACHE_MODULE_OPTIONS } from '@nestjs/cache-manager';
+import { CACHE_MANAGER, CACHE_MODULE_OPTIONS } from '@nestjs/cache-manager';
 import * as bcrypt from 'bcrypt';
 
 const JwtService = () => {
@@ -63,10 +61,8 @@ describe('UserController (e2e)', () => {
   };
   // let jwtService: JwtService;
   let jwtService;
-  let authToken: string;
 
   beforeEach(async () => {
-    process.env['SECRET_KEY'] = '0000000';
     serviceMockRepo = new MockRepo<UserDTO>();
     userData = { ...userDataMock };
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -87,7 +83,7 @@ describe('UserController (e2e)', () => {
           useValue: serviceMockRepo,
         },
         {
-          provide: 'CACHE_MANAGER',
+          provide: CACHE_MANAGER,
           useValue: {},
         },
         {
@@ -100,15 +96,12 @@ describe('UserController (e2e)', () => {
         },
       ],
     })
-      .overrideProvider('CACHE_MODULE_OPTIONS')
+      .overrideProvider(CACHE_MODULE_OPTIONS)
       .useValue({})
       .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
-
-    // jwtService = moduleFixture.get<JwtService>(JwtService);
-    authToken = jwtService.sign(userData, { secret: process.env.SECRET_KEY });
   });
 
   afterEach(async () => {
@@ -123,7 +116,7 @@ describe('UserController (e2e)', () => {
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('data');
-      expect(response.body.data['dataValues'].id).toBeDefined();
+      expect(response.body.data.id).toBeDefined();
     });
     it('should failed to create a new patient user', async () => {
       const mockError = new Error('Some error');
@@ -157,7 +150,7 @@ describe('UserController (e2e)', () => {
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('data');
-      expect(response.body.data['dataValues'].id).toBeDefined();
+      expect(response.body.data.id).toBeDefined();
     });
     it('should failed to create a new practitioner user', async () => {
       const mockError = new Error('Some error');
@@ -194,12 +187,12 @@ describe('UserController (e2e)', () => {
         entityModel: any,
         filterCondition: any,
       ) => {
-        return [{ dataValues: userData }];
+        return [userData];
       };
       const userType = USER_TYPE.customer;
-      const response = await request(app.getHttpServer())
-        .get(`/user/get-all-users-by-usertype/${userType}`)
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app.getHttpServer()).get(
+        `/user/get-all-users-by-usertype/${userType}`,
+      );
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('data');
       expect(response.body['data']['rows'][0].email).toBeDefined();
@@ -213,9 +206,9 @@ describe('UserController (e2e)', () => {
         return [];
       };
 
-      const response = await request(app.getHttpServer())
-        .get(`/user/get-all-users-by-usertype/${userType}`)
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app.getHttpServer()).get(
+        `/user/get-all-users-by-usertype/${userType}`,
+      );
       expect(response.status).toBe(200);
       expect(response.body.data['rows']).toBeDefined();
       expect(response.body.data['count']).toBe(1);
@@ -230,9 +223,9 @@ describe('UserController (e2e)', () => {
         throw new Error('Some Error');
       };
 
-      const response = await request(app.getHttpServer())
-        .get(`/user/get-all-users-by-usertype/${userType}`)
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app.getHttpServer()).get(
+        `/user/get-all-users-by-usertype/${userType}`,
+      );
 
       expect(response.status).toBe(500);
     });
@@ -244,13 +237,10 @@ describe('UserController (e2e)', () => {
         entityModel: any,
         filterCondition: any,
       ) => {
-        return {
-          dataValues: { ...userData, ...{ userType: USER_TYPE.customer } },
-        };
+        return { ...userData, ...{ userType: USER_TYPE.customer } };
       };
       const response = await request(app.getHttpServer())
         .patch(`/user/update-patient-profile/`)
-        .set('Authorization', `Bearer ${authToken}`)
         .send({
           id: '1',
           fullName: 'test full name',
@@ -267,7 +257,6 @@ describe('UserController (e2e)', () => {
       };
       const response = await request(app.getHttpServer())
         .patch(`/user/update-patient-profile`)
-        .set('Authorization', `Bearer ${authToken}`)
         .send({
           id: '1',
           fullName: 'test full name',
@@ -281,16 +270,13 @@ describe('UserController (e2e)', () => {
         entityModel: any,
         filterCondition: any,
       ) => {
-        return {
-          dataValues: { ...userData, ...{ userType: USER_TYPE.customer } },
-        };
+        return { ...userData, ...{ userType: USER_TYPE.customer } };
       };
       serviceMockRepo.UpdateOne = () => {
         throw new Error('Some Error');
       };
       const response = await request(app.getHttpServer())
         .patch(`/user/update-patient-profile`)
-        .set('Authorization', `Bearer ${authToken}`)
         .send({
           id: '1',
           fullName: 'test full name',
@@ -308,11 +294,11 @@ describe('UserController (e2e)', () => {
         entityModel: any,
         filterCondition: any,
       ) => {
-        return { dataValues: { ...userData, ...{ userType: 'patient' } } };
+        return { ...userData, ...{ userType: 'patient' } };
       };
-      const response = await request(app.getHttpServer())
-        .get(`/user/get-patient-by-id/${userData.id}`)
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app.getHttpServer()).get(
+        `/user/get-patient-by-id/${userData.id}`,
+      );
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('data');
       expect(response.body['data'].email).toBeDefined();
@@ -322,9 +308,9 @@ describe('UserController (e2e)', () => {
         return null;
       };
 
-      const response = await request(app.getHttpServer())
-        .get(`/user/get-patient-by-id/${userData.id}`)
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app.getHttpServer()).get(
+        `/user/get-patient-by-id/${userData.id}`,
+      );
 
       expect(response.status).toBe(404);
     });
@@ -333,9 +319,9 @@ describe('UserController (e2e)', () => {
         throw new Error('some error');
       };
 
-      const response = await request(app.getHttpServer())
-        .get(`/user/get-patient-by-id/${userData.id}`)
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app.getHttpServer()).get(
+        `/user/get-patient-by-id/${userData.id}`,
+      );
 
       expect(response.status).toBe(500);
     });
@@ -347,13 +333,10 @@ describe('UserController (e2e)', () => {
         entityModel: any,
         filterCondition: any,
       ) => {
-        return {
-          dataValues: { ...userData, ...{ userType: USER_TYPE.customer } },
-        };
+        return { ...userData, ...{ userType: USER_TYPE.customer } };
       };
       const response = await request(app.getHttpServer())
         .patch(`/user/update-password/`)
-        .set('Authorization', `Bearer ${authToken}`)
         .send({
           id: '1',
           oldPassword: 'test',
@@ -369,7 +352,6 @@ describe('UserController (e2e)', () => {
       };
       const response = await request(app.getHttpServer())
         .patch(`/user/update-password/`)
-        .set('Authorization', `Bearer ${authToken}`)
         .send({
           id: '1',
           oldPassword: 'test',
@@ -382,16 +364,13 @@ describe('UserController (e2e)', () => {
         entityModel: any,
         filterCondition: any,
       ) => {
-        return {
-          dataValues: { ...userData, ...{ userType: USER_TYPE.customer } },
-        };
+        return { ...userData, ...{ userType: USER_TYPE.customer } };
       };
       serviceMockRepo.UpdateOne = () => {
         throw new Error('Some Error');
       };
       const response = await request(app.getHttpServer())
         .patch(`/user/update-password/`)
-        .set('Authorization', `Bearer ${authToken}`)
         .send({
           id: '1',
           oldPassword: 'test',
@@ -408,15 +387,12 @@ describe('UserController (e2e)', () => {
         entityModel: any,
         filterCondition: any,
       ) => {
-        return {
-          dataValues: { ...userData, ...{ userType: USER_TYPE.customer } },
-        };
+        return { ...userData, ...{ userType: USER_TYPE.customer } };
       };
       userData.userType = USER_TYPE.customer;
-      authToken = jwtService.sign(userData, { secret: process.env.SECRET_KEY });
-      const response = await request(app.getHttpServer())
-        .delete(`/user/delete-patient-account/${userData.id}`)
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app.getHttpServer()).delete(
+        `/user/delete-patient-account/${userData.id}`,
+      );
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('data');
     });
@@ -425,10 +401,9 @@ describe('UserController (e2e)', () => {
         return null;
       };
       userData.userType = USER_TYPE.customer;
-      authToken = jwtService.sign(userData, { secret: process.env.SECRET_KEY });
-      const response = await request(app.getHttpServer())
-        .delete(`/user/delete-patient-account/${userData.id}`)
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app.getHttpServer()).delete(
+        `/user/delete-patient-account/${userData.id}`,
+      );
       expect(response.status).toBe(404);
     });
     it('should fail while updating patient profile', async () => {
@@ -436,18 +411,15 @@ describe('UserController (e2e)', () => {
         entityModel: any,
         filterCondition: any,
       ) => {
-        return {
-          dataValues: { ...userData, ...{ userType: USER_TYPE.customer } },
-        };
+        return { ...userData, ...{ userType: USER_TYPE.customer } };
       };
       userData.userType = USER_TYPE.customer;
-      authToken = jwtService.sign(userData, { secret: process.env.SECRET_KEY });
       serviceMockRepo.remove = () => {
         throw new Error('Some Error');
       };
-      const response = await request(app.getHttpServer())
-        .delete(`/user/delete-patient-account/${userData.id}`)
-        .set('Authorization', `Bearer ${authToken}`);
+      const response = await request(app.getHttpServer()).delete(
+        `/user/delete-patient-account/${userData.id}`,
+      );
 
       expect(response.status).toBe(500);
     });

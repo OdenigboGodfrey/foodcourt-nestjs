@@ -1,0 +1,44 @@
+version: "3"
+services:
+  postgres:
+    container_name: foodcourt-pg-db
+    stdin_open: true
+    tty: true
+    image: postgres:13.1-alpine
+    environment:
+      - POSTGRES_DB=foodcourt
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=FA_Password_12345
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+  redis:
+    container_name: foodcourt-redis-cache
+    stdin_open: true
+    tty: true
+    image: redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning
+  web:
+    container_name: foodcourt-web
+    stdin_open: true
+    tty: true 
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./.env
+    ports:
+      - 3000:3000
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+volumes:
+  redis_data:
+    driver: local
+  pgdata:

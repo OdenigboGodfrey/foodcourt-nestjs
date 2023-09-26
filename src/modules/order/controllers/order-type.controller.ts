@@ -1,11 +1,11 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  Param,
   Post,
+  Body,
+  Param,
   Put,
+  Delete,
   ValidationPipe,
 } from '@nestjs/common';
 import {
@@ -16,15 +16,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ResponseDTO } from 'src/shared/dto/response.dto';
-import { BasicMealDTO, MealDTO } from '../dto/meal.dto';
 import { RESPONSE_CODE } from 'src/shared/enums/response-code.enum';
-import { Meal } from '../entities/meals.entity';
-import { MealService } from '../services/meal.service';
+import { OrderTypeService } from '../services/order-type.service';
+import { BasicOrderTypeDTO, OrderTypeDTO } from '../dto/order-type.dto';
+import { OrderType } from '../entities/order-type.entity';
 
-@Controller('meal')
-@ApiTags('meal')
-export class MealController {
-  constructor(private readonly service: MealService) {}
+@Controller('order-type')
+@ApiTags('order-type')
+export class OrderTypeController {
+  constructor(private readonly orderService: OrderTypeService) {}
 
   basicErrorMessage = 'Something went wrong, please try again.';
   basicOkMessage = 'Ok';
@@ -35,17 +35,17 @@ export class MealController {
   @ApiProduces('json')
   @ApiConsumes('application/json')
   @ApiResponse({
-    type: MealDTO,
+    type: OrderTypeDTO,
   })
   @Post()
   async create(
     @Body(new ValidationPipe({ transform: true }))
-    payload: BasicMealDTO,
+    orderData: BasicOrderTypeDTO,
   ) {
-    const response = new ResponseDTO<MealDTO>({
+    const response = new ResponseDTO<OrderTypeDTO>({
       message: this.basicErrorMessage,
     });
-    const result = await this.service.create(payload);
+    const result = await this.orderService.create(orderData);
     if (result) {
       response.data = result;
       response.status = true;
@@ -57,25 +57,25 @@ export class MealController {
 
   @Get()
   getAll() {
-    return this.service.getAll();
+    return this.orderService.getAll();
   }
 
   @Get(':id')
   getById(@Param('id') id: number) {
-    return this.service.getById(id);
+    return this.orderService.getById(id);
   }
 
   @Put(':id')
   update(
     @Param('id') id: number,
     @Body(new ValidationPipe({ transform: true }))
-    updatedData: Partial<Meal>,
+    updatedData: Partial<OrderType>,
   ) {
-    return this.service.update(id, updatedData);
+    return this.orderService.update(id, updatedData);
   }
 
   @Delete(':id')
   delete(@Param('id') id: number) {
-    return this.service.delete(id);
+    return this.orderService.delete(id);
   }
 }

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { OrderLog } from '../entities/order-log.entity';
 import { OrderLogRepositoryInterface } from '../repository/order-log.repository';
+import { BasicOrderLogDTO } from '../dto/order-log.dto';
 
 @Injectable()
 export class OrderLogService {
@@ -8,7 +9,7 @@ export class OrderLogService {
     @Inject('OrderLogRepositoryInterface')
     private readonly repository: OrderLogRepositoryInterface,
   ) {}
-  async create(orderData: Partial<OrderLog>): Promise<OrderLog> {
+  async create(orderData: BasicOrderLogDTO): Promise<OrderLog> {
     return this.repository.create(OrderLog, orderData);
   }
 
