@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MealRequestDTO } from 'src/modules/meal/dto/meal.dto';
+import { MealRequestDTO } from './../../../modules/meal/dto/meal.dto';
 import { CalculatedOrderDTO } from './calculated-order.dto';
 import { OrderLogDTO } from './order-log.dto';
 

@@ -1,0 +1,13 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testRegex": "(/test/.*\\.e2e-spec\\.ts$|\\.e2e-spec\\.ts$)",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "collectCoverage": true,
+  "testEnvironment": "node",
+  "moduleNameMapper": {
+    "^cache/(.*)$": "<rootDir>/test/mocks/cache.mock.ts"
+  }    
+}

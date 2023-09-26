@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { OrderRepositoryInterface } from '../repository/order.repository';
 import { Order } from '../entities/order.entity';
 import { NewOrderRequestDTO, NewOrderResponseDTO } from '../dto/order.dto';
-import { MealService } from 'src/modules/meal/services/meal.service';
+import { MealService } from './../../../modules/meal/services/meal.service';
 import { CalculatedOrderService } from './calculated-order.service';
 import { OrderLogService } from './order-log.service';
 

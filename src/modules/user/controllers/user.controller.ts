@@ -41,7 +41,7 @@ export class UserController {
   constructor(private readonly service: UserService) {}
 
   @ApiOperation({
-    description: 'Create a new patient account',
+    description: 'Create a new  account',
   })
   @ApiProduces('json')
   @ApiConsumes('application/json', 'multipart/form-data')
@@ -57,11 +57,12 @@ export class UserController {
 
     const response = await this.service.createUser(userObject);
     data.password = '';
+    console.log('create user response', response);
     return response.getResponse();
   }
 
   @ApiOperation({
-    description: 'get all users by patient user type',
+    description: 'get all users by  user type',
   })
   @ApiProduces('json')
   @ApiConsumes('application/json')
@@ -69,8 +70,8 @@ export class UserController {
     type: UserDTO,
     isArray: true,
   })
-  @Get('/get-all-users-by-usertype/patient')
-  async getPatientUsers(
+  @Get('/get-all/')
+  async getUsers(
     @Query() userType: USER_TYPE,
     @Query() pagination: PaginationParameterRequestDTO,
   ): Promise<ResponseDTO<PaginationParameterResponseDTO<UserDTO>>> {
@@ -96,16 +97,16 @@ export class UserController {
   }
 
   @ApiOperation({
-    description: 'update a patient profile',
+    description: 'update a  profile',
   })
   @ApiProduces('json')
   @ApiConsumes('application/json', 'multipart/form-data')
   @ApiResponse({
     type: Boolean,
   })
-  @Patch('/update-patient-profile')
+  @Patch('/update-profile')
   @ApiBody({ type: EditUserDTO })
-  async updatePatientProfile(
+  async updateProfile(
     @Body() data: EditUserDTO,
   ): Promise<ResponseDTO<boolean>> {
     const response = new ResponseDTO<boolean>();
@@ -117,10 +118,7 @@ export class UserController {
       response.code = user.code;
       return response.getResponse();
     }
-    const updateResponse = await this.service.updatePatientProfile(
-      user.data,
-      data,
-    );
+    const updateResponse = await this.service.updateProfile(user.data, data);
     return updateResponse.getResponse();
   }
 
@@ -163,7 +161,7 @@ export class UserController {
     type: UserDTO,
   })
   @Get('/get-user-by-id/:id')
-  async getPatientById(@Param('id') id: number): Promise<ResponseDTO<UserDTO>> {
+  async getById(@Param('id') id: number): Promise<ResponseDTO<UserDTO>> {
     const result = await this.service.getUserById(id);
     const response = new ResponseDTO<UserDTO>();
     response.message = result.message;
@@ -177,15 +175,15 @@ export class UserController {
   }
 
   @ApiOperation({
-    description: 'delete patient account',
+    description: 'delete  account',
   })
   @ApiProduces('json')
   @ApiConsumes('application/json')
   @ApiResponse({
     type: Boolean,
   })
-  @Delete('/delete-patient-account/:userId')
-  async deletePatientAccount(
+  @Delete('/delete-account/:userId')
+  async deleteAccount(
     @Param('userId') userId: number,
   ): Promise<ResponseDTO<boolean>> {
     const result = await this.service.getUserById(userId);

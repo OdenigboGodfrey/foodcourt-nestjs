@@ -15,9 +15,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ResponseDTO } from 'src/shared/dto/response.dto';
+import { ResponseDTO } from './../../../shared/dto/response.dto';
 import { BasicMealDTO, MealDTO } from '../dto/meal.dto';
-import { RESPONSE_CODE } from 'src/shared/enums/response-code.enum';
+import { RESPONSE_CODE } from './../../../shared/enums/response-code.enum';
 import { Meal } from '../entities/meals.entity';
 import { MealService } from '../services/meal.service';
 

@@ -16,9 +16,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ResponseDTO } from 'src/shared/dto/response.dto';
+import { ResponseDTO } from './../../../shared/dto/response.dto';
 import { CalculatedOrderDTO } from '../dto/calculated-order.dto';
-import { RESPONSE_CODE } from 'src/shared/enums/response-code.enum';
+import { RESPONSE_CODE } from './../../../shared/enums/response-code.enum';
 
 @Controller('calculated-orders')
 @ApiTags('calculated-orders')

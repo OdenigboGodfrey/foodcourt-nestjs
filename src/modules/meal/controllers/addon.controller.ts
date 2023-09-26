@@ -17,8 +17,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { BasicAddonDTO, AddonDTO } from '../dto/addon.dto';
-import { ResponseDTO } from 'src/shared/dto/response.dto';
-import { RESPONSE_CODE } from 'src/shared/enums/response-code.enum';
+import { ResponseDTO } from './../../../shared/dto/response.dto';
+import { RESPONSE_CODE } from './../../../shared/enums/response-code.enum';
 
 @Controller('addon')
 @ApiTags('addon')

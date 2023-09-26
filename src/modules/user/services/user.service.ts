@@ -44,6 +44,7 @@ export class UserService {
       response.message = 'User account created.';
       response.code = RESPONSE_CODE._201;
     } catch (e) {
+      console.log('e', e);
       const errorObject: ErrorClass<any> = {
         payload,
         error: e['errors'],
@@ -51,14 +52,6 @@ export class UserService {
       };
       response.message = 'Something went wrong, please try again.';
       response.code = RESPONSE_CODE._500;
-      if (typeof e === 'object') {
-        if (e['name'] === 'SequelizeUniqueConstraintError') {
-          response.message =
-            'Please ensure email or phone has not been used to open an existing account.';
-          response.code = RESPONSE_CODE._409;
-          errorObject.error = e['parent'];
-        }
-      }
       errorObject.response = response;
       this.logger.error(e.toString(), errorObject);
     }
@@ -130,19 +123,13 @@ export class UserService {
       paginationResponse.rows = [];
 
       const query = pagination.buildQuery({
-        or: {
-          // [Op.or]: userTypes.map((x) => {
-          //   return { userType: x };
-          // }),
-        },
+        or: {},
       });
       // extract query conditions
-      // const orQuery = query['where']['or'];
       delete query['where']['or'];
       const otherQuery = query['where'];
 
       const newQuery = {
-        // [Op.or]: orQuery,
         ...otherQuery,
       };
       const result = await pagination.fetchPaginatedRecords<User>(
@@ -399,7 +386,7 @@ export class UserService {
     return response;
   }
 
-  async updatePatientProfile(
+  async updateProfile(
     user: User,
     payload: EditUserDTO,
   ): Promise<ResponseDTO<boolean>> {

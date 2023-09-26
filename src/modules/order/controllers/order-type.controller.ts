@@ -15,8 +15,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ResponseDTO } from 'src/shared/dto/response.dto';
-import { RESPONSE_CODE } from 'src/shared/enums/response-code.enum';
+import { ResponseDTO } from './../../../shared/dto/response.dto';
+import { RESPONSE_CODE } from './../../../shared/enums/response-code.enum';
 import { OrderTypeService } from '../services/order-type.service';
 import { BasicOrderTypeDTO, OrderTypeDTO } from '../dto/order-type.dto';
 import { OrderType } from '../entities/order-type.entity';

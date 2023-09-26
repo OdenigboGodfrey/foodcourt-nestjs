@@ -10,12 +10,21 @@ import { UserController } from '../../../controllers/user.controller';
 import { AppModule } from './../../../../../app.module';
 import * as dotenv from 'dotenv';
 dotenv.config();
-jest.useFakeTimers();
+// jest.useFakeTimers();
 import { CACHE_MANAGER, CACHE_MODULE_OPTIONS } from '@nestjs/cache-manager';
 import * as bcrypt from 'bcrypt';
+import { assert } from 'console';
+import { getQueueOptionsToken, getQueueToken } from '@nestjs/bull';
+import { QueueOptions } from 'bull';
 
 const JwtService = () => {
   return true;
+};
+
+const queueMock = {
+  add: jest.fn(),
+  process: jest.fn(),
+  on: jest.fn(),
 };
 
 describe('UserController (e2e)', () => {
@@ -39,25 +48,6 @@ describe('UserController (e2e)', () => {
     otpReason: '',
     emailVerifiedDate: undefined,
     id: 1,
-  };
-  const mockPractitionerInformation = {
-    specializationId: 1,
-    location: '0.0:1.1',
-    rating: 3,
-    experience: 1,
-    about: 'test information about',
-    higherInstitution: 'MDX University',
-    yearOfGraduation: '2020-08-22T06:26:17.325Z',
-    residencyInfo: 'Residency in abj',
-    boardCertifications: 'Certified on 20th',
-    yearOfCompletetion: '2020-08-22T06:26:17.325Z',
-    workHistory: '3 yrs',
-    clinicalInterests: 'surgery',
-    licenseNo: '12345678',
-    licenseState: 'Abj',
-    regulatoryComplaince: 'yes',
-    affiliations: 'n/a',
-    arearsOfSpecialization: 'eyes, nose and skin',
   };
   // let jwtService: JwtService;
   let jwtService;
@@ -86,95 +76,50 @@ describe('UserController (e2e)', () => {
           provide: CACHE_MANAGER,
           useValue: {},
         },
-        {
-          provide: 'AuditLogService',
-          useValue: {
-            emitAuditLog: (eventEmitter, payload) => {
-              eventEmitter.emit = () => {};
-            },
-          },
-        },
       ],
     })
       .overrideProvider(CACHE_MODULE_OPTIONS)
       .useValue({})
+      .overrideProvider(getQueueOptionsToken())
+      .useValue(queueMock)
+      .overrideProvider(getQueueToken('orders'))
+      .useValue(queueMock)
       .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
   });
 
   describe('create user', () => {
-    it('should create a new patient user', async () => {
+    it('should create a new user', async () => {
       const response = await request(app.getHttpServer())
-        .post('/user/create-patient')
+        .post('/user/')
         .send(userData);
-
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('data');
+      expect(response.status).toEqual(201);
+      expect(response.body).toBeDefined();
       expect(response.body.data.id).toBeDefined();
     });
-    it('should failed to create a new patient user', async () => {
+    it('should failed to create a new  user', async () => {
       const mockError = new Error('Some error');
       serviceMockRepo.create = jest.fn().mockRejectedValue(mockError);
       const response = await request(app.getHttpServer())
-        .post('/user/create-patient')
+        .post('/user/')
         .send(userData);
 
       expect(response.status).toBe(500);
       expect(response.body.data).toEqual(null);
     });
-    it('should failed to create a new patient user due to duplicate error', async () => {
+    it('should failed to create a new  user due to duplicate error', async () => {
       const mockError = new Error('Some error');
-      mockError['name'] = 'SequelizeUniqueConstraintError';
+      mockError['name'] = 'Error';
       serviceMockRepo.create = jest.fn().mockRejectedValue(mockError);
       const response = await request(app.getHttpServer())
-        .post('/user/create-patient')
+        .post('/user/')
         .send(userData);
-
-      expect(response.status).toBe(409);
-      expect(response.body.data).toEqual(null);
-    });
-
-    it('should create a new practitioner user', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/user/create-physician')
-        .send({
-          userInfo: userData,
-          practitionerInfo: mockPractitionerInformation,
-        });
-
-      expect(response.status).toBe(201);
-      expect(response.body).toHaveProperty('data');
-      expect(response.body.data.id).toBeDefined();
-    });
-    it('should failed to create a new practitioner user', async () => {
-      const mockError = new Error('Some error');
-      serviceMockRepo.create = jest.fn().mockRejectedValue(mockError);
-      const response = await request(app.getHttpServer())
-        .post('/user/create-physician')
-        .send({
-          userInfo: userData,
-          practitionerInfo: mockPractitionerInformation,
-        });
-
-      expect(response.status).toBe(500);
-      expect(response.body.data).toEqual(null);
-    });
-    it('should failed to create a new practitioner user due to duplicate error', async () => {
-      const mockError = new Error('Some error');
-      mockError['name'] = 'SequelizeUniqueConstraintError';
-      serviceMockRepo.create = jest.fn().mockRejectedValue(mockError);
-      const response = await request(app.getHttpServer())
-        .post('/user/create-physician')
-        .send({
-          userInfo: userData,
-          practitionerInfo: mockPractitionerInformation,
-        });
 
       expect(response.status).toBe(409);
       expect(response.body.data).toEqual(null);
@@ -182,7 +127,7 @@ describe('UserController (e2e)', () => {
   });
 
   describe('get all users by usertype', () => {
-    it('should retrieve patient users by user type', async () => {
+    it('should retrieve  users by user type', async () => {
       serviceMockRepo.findByCondition = async (
         entityModel: any,
         filterCondition: any,
@@ -190,14 +135,12 @@ describe('UserController (e2e)', () => {
         return [userData];
       };
       const userType = USER_TYPE.customer;
-      const response = await request(app.getHttpServer()).get(
-        `/user/get-all-users-by-usertype/${userType}`,
-      );
+      const response = await request(app.getHttpServer()).get(`/user/get-all/`);
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('data');
-      expect(response.body['data']['rows'][0].email).toBeDefined();
+      expect(response.body['data'][0].email).toBeDefined();
     });
-    it('should not retrieve any patient user by user type', async () => {
+    it('should not retrieve any  user by user type', async () => {
       const userType = USER_TYPE.customer;
       serviceMockRepo.findByCondition = async (
         entityModel,
@@ -206,15 +149,13 @@ describe('UserController (e2e)', () => {
         return [];
       };
 
-      const response = await request(app.getHttpServer()).get(
-        `/user/get-all-users-by-usertype/${userType}`,
-      );
+      const response = await request(app.getHttpServer()).get(`/user/get-all/`);
       expect(response.status).toBe(200);
-      expect(response.body.data['rows']).toBeDefined();
+      expect(response.body.data).toBeDefined();
       expect(response.body.data['count']).toBe(1);
       expect(response.body.data['totalPages']).toBe(1);
     });
-    it('should not retrieve any patient user by user type', async () => {
+    it('should not retrieve any  user by user type', async () => {
       const userType = USER_TYPE.customer;
       serviceMockRepo.findByCondition = async (
         entityModel,
@@ -223,16 +164,14 @@ describe('UserController (e2e)', () => {
         throw new Error('Some Error');
       };
 
-      const response = await request(app.getHttpServer()).get(
-        `/user/get-all-users-by-usertype/${userType}`,
-      );
+      const response = await request(app.getHttpServer()).get(`/user/get-all/`);
 
       expect(response.status).toBe(500);
     });
   });
 
   describe('should update user profile', () => {
-    it('should update patient profile', async () => {
+    it('should update  profile', async () => {
       serviceMockRepo.findOneByCondition = (
         entityModel: any,
         filterCondition: any,
@@ -240,7 +179,7 @@ describe('UserController (e2e)', () => {
         return { ...userData, ...{ userType: USER_TYPE.customer } };
       };
       const response = await request(app.getHttpServer())
-        .patch(`/user/update-patient-profile/`)
+        .patch(`/user/update-profile/`)
         .send({
           id: '1',
           fullName: 'test full name',
@@ -251,12 +190,12 @@ describe('UserController (e2e)', () => {
       expect(response.body).toHaveProperty('data');
       expect(response.body['data']).toBe(true);
     });
-    it('should fail to find user while updating patient profile', async () => {
+    it('should fail to find user while updating  profile', async () => {
       serviceMockRepo.findOneByCondition = () => {
         return null;
       };
       const response = await request(app.getHttpServer())
-        .patch(`/user/update-patient-profile`)
+        .patch(`/user/update-profile`)
         .send({
           id: '1',
           fullName: 'test full name',
@@ -265,7 +204,7 @@ describe('UserController (e2e)', () => {
         });
       expect(response.status).toBe(404);
     });
-    it('should fail while updating patient profile', async () => {
+    it('should fail while updating  profile', async () => {
       serviceMockRepo.findOneByCondition = (
         entityModel: any,
         filterCondition: any,
@@ -276,7 +215,7 @@ describe('UserController (e2e)', () => {
         throw new Error('Some Error');
       };
       const response = await request(app.getHttpServer())
-        .patch(`/user/update-patient-profile`)
+        .patch(`/user/update-profile`)
         .send({
           id: '1',
           fullName: 'test full name',
@@ -288,16 +227,16 @@ describe('UserController (e2e)', () => {
     });
   });
 
-  describe('get patient user by id', () => {
-    it('should retrieve patient user by id', async () => {
+  describe('get  user by id', () => {
+    it('should retrieve  user by id', async () => {
       serviceMockRepo.findOneByCondition = (
         entityModel: any,
         filterCondition: any,
       ) => {
-        return { ...userData, ...{ userType: 'patient' } };
+        return { ...userData, ...{ userType: '' } };
       };
       const response = await request(app.getHttpServer()).get(
-        `/user/get-patient-by-id/${userData.id}`,
+        `/user/get-user-by-id/${userData.id}`,
       );
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('data');
@@ -309,7 +248,7 @@ describe('UserController (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer()).get(
-        `/user/get-patient-by-id/${userData.id}`,
+        `/user/get-user-by-id/${userData.id}`,
       );
 
       expect(response.status).toBe(404);
@@ -320,7 +259,7 @@ describe('UserController (e2e)', () => {
       };
 
       const response = await request(app.getHttpServer()).get(
-        `/user/get-patient-by-id/${userData.id}`,
+        `/user/get-user-by-id/${userData.id}`,
       );
 
       expect(response.status).toBe(500);
@@ -346,7 +285,7 @@ describe('UserController (e2e)', () => {
       expect(response.body).toHaveProperty('data');
       expect(response.body['data']).toBe(true);
     });
-    it('should fail to find user while updating patient password', async () => {
+    it('should fail to find user while updating  password', async () => {
       serviceMockRepo.findOneByCondition = () => {
         return null;
       };
@@ -359,7 +298,7 @@ describe('UserController (e2e)', () => {
         });
       expect(response.status).toBe(404);
     });
-    it('should fail while updating patient password', async () => {
+    it('should fail while updating  password', async () => {
       serviceMockRepo.findOneByCondition = (
         entityModel: any,
         filterCondition: any,
@@ -381,8 +320,8 @@ describe('UserController (e2e)', () => {
     });
   });
 
-  describe('should delete patient account', () => {
-    it('should delete patient account', async () => {
+  describe('should delete  account', () => {
+    it('should delete  account', async () => {
       serviceMockRepo.findOneByCondition = (
         entityModel: any,
         filterCondition: any,
@@ -391,22 +330,22 @@ describe('UserController (e2e)', () => {
       };
       userData.userType = USER_TYPE.customer;
       const response = await request(app.getHttpServer()).delete(
-        `/user/delete-patient-account/${userData.id}`,
+        `/user/delete-account/${userData.id}`,
       );
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('data');
     });
-    it('should fail to find user while updating patient profile', async () => {
+    it('should fail to find user while updating  profile', async () => {
       serviceMockRepo.findOneByCondition = () => {
         return null;
       };
       userData.userType = USER_TYPE.customer;
       const response = await request(app.getHttpServer()).delete(
-        `/user/delete-patient-account/${userData.id}`,
+        `/user/delete-account/${userData.id}`,
       );
       expect(response.status).toBe(404);
     });
-    it('should fail while updating patient profile', async () => {
+    it('should fail while updating  profile', async () => {
       serviceMockRepo.findOneByCondition = (
         entityModel: any,
         filterCondition: any,
@@ -418,7 +357,7 @@ describe('UserController (e2e)', () => {
         throw new Error('Some Error');
       };
       const response = await request(app.getHttpServer()).delete(
-        `/user/delete-patient-account/${userData.id}`,
+        `/user/delete-account/${userData.id}`,
       );
 
       expect(response.status).toBe(500);

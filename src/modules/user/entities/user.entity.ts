@@ -1,7 +1,7 @@
 import { Model } from 'objection';
 import { IUser } from '../interfaces/iuser.interface';
 import { USER_TYPE } from '../enums/user.enum';
-import { knexInstance } from 'knexfile';
+import { knexInstance } from './../../../../knexfile';
 
 Model.knex(knexInstance);
 

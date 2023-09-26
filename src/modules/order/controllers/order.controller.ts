@@ -19,8 +19,8 @@ import {
 import { OrderService } from '../services/order.service';
 import { Order } from '../entities/order.entity';
 import { NewOrderRequestDTO, NewOrderResponseDTO } from '../dto/order.dto';
-import { ResponseDTO } from 'src/shared/dto/response.dto';
-import { RESPONSE_CODE } from 'src/shared/enums/response-code.enum';
+import { ResponseDTO } from './../../../shared/dto/response.dto';
+import { RESPONSE_CODE } from './../../../shared/enums/response-code.enum';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 

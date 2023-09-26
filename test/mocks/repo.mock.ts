@@ -32,6 +32,7 @@ export class MockRepo<T> {
   }
 
   async create(entityModel, dto: T) {
+    console.log('create test', dto, entityModel);
     if (!dto['id']) dto['id'] = randomUUID();
     this.dataStore.push(dto);
     return this.prepareResponse(dto);

@@ -1,5 +1,4 @@
 import { Knex } from 'knex';
-// import { USER_TYPE } from 'src/modules/user/enums/user.enum';
 import { USER_TYPE } from './../src/modules/user/enums/user.enum';
 
 export async function up(knex: Knex): Promise<void> {
